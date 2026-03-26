@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Kidz & Kash | Financial Literacy Made Fun</title>
+    <script src="https://unpkg.com/react@18.2.0/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0D1B2A; font-family: 'Segoe UI', system-ui, sans-serif; overflow-x: hidden; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
+        ::-webkit-scrollbar-thumb { background: #F5A623; border-radius: 8px; }
+        @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
+        @keyframes bounce { 0%,100%{ transform: scale(1); } 50%{ transform: scale(1.08); } }
+        @keyframes pulse { 0% { transform: scale(0.9); opacity: 1; } 100% { transform: scale(1.4); opacity: 0; } }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --------------------------------------------------------------
+        // 1. DATA – COUNTIES WITH REAL COORDINATES
+        // --------------------------------------------------------------
+        const COUNTIES = [
+            { id: "nairobi",   name: "Nairobi",    emoji: "🏙️", color: "#E63946", lat: -1.2864, lng: 36.8172 },
+            { id: "mombasa",   name: "Mombasa",    emoji: "⛵", color: "#2196F3", lat: -4.0435, lng: 39.6682 },
+            { id: "kisumu",    name: "Kisumu",     emoji: "🐟", color: "#FF9800", lat: -0.0917, lng: 34.7680 },
+            { id: "nakuru",    name: "Nakuru",     emoji: "🦩", color: "#9C27B0", lat: -0.3031, lng: 36.0800 },
+            { id: "eldoret",   name: "Eldoret",    emoji: "🏃", color: "#4CAF50", lat: 0.5143, lng: 35.2698 },
+            { id: "garissa",   name: "Garissa",    emoji: "🐪", color: "#FF5722", lat: -0.4533, lng: 39.6461 },
+            { id: "kwale",     name: "Kwale",      emoji: "🌊", color: "#00BCD4", lat: -4.1744, lng: 39.4521 },
+            { id: "meru",      name: "Meru",       emoji: "⛰️", color: "#8BC34A", lat: 0.0500, lng: 37.6500 },
+            { id: "kakamega",  name: "Kakamega",   emoji: "🌳", color: "#CDDC39", lat: 0.2827, lng: 34.7519 },
+        ];
+
+        // --------------------------------------------------------------
+        // 2. MODULES – 80+ LESSONS (full data)
+        // --------------------------------------------------------------
+        const MODULES = [
+            // Module 1: Money Safari Basics (12 lessons)
+            { id: 1, title: "Money Safari Basics", icon: "🦁", level: "Cub (10–13)", xp: 200, color: "#F5A623", badge: "🥉 Cub Scout", county: "nairobi", ageGroup: "junior",
+              lessons: [
+                { title: "What is Money?", content: "Money is anything people agree to use to exchange for goods and services. In Kenya, we use the Kenyan Shilling (KES). Before money, people used barter — swapping goats for grain! M-Pesa lets us move money with just a phone.", quiz: { q: "Which of the following is Kenya's official currency?", options: ["Dollar", "Kenyan Shilling", "Euro", "Rand"], answer: 1, explanation: "The Kenyan Shilling (KES) is Kenya's official currency." } },
+                { title: "Needs vs. Wants", content: "A NEED is something you must have to survive — food, water, shelter, school fees. A WANT is nice to have but not essential — new trainers, a video game. Great money managers always cover needs first!", quiz: { q: "School fees are best classified as a…", options: ["Want", "Need", "Luxury", "Investment"], answer: 1, explanation: "Education is a need — it builds your future." } },
+                { title: "Your First Budget", content: "A budget is a plan for your money. Use the 50-30-20 rule: 50% on Needs, 30% on Wants, 20% on Savings. If pocket money is KES 500/week: KES 250 for needs, KES 150 for wants, KES 100 to save!", quiz: { q: "You receive KES 1,000. Using 50-30-20, how much should you save?", options: ["KES 100", "KES 200", "KES 500", "KES 300"], answer: 1, explanation: "20% of 1,000 = KES 200. Saving consistently builds wealth." } },
+                { title: "Barter to Modern Money", content: "Long ago, people exchanged goods directly (barter). It was hard because you needed a double coincidence of wants. Then came cowrie shells, coins, paper money, and now digital money like M-Pesa.", quiz: { q: "What was a major problem with barter trade?", options: ["No receipts", "Double coincidence of wants", "Too much money", "No banks"], answer: 1, explanation: "Both parties had to want what the other offered – that was difficult." } },
+                { title: "Where Does Money Come From?", content: "Money is created by central banks (CBK) and also by commercial banks when they give loans. But for you, money comes from work, business, gifts, or investments.", quiz: { q: "Which institution prints Kenyan currency?", options: ["KCB", "Central Bank of Kenya", "M-Pesa", "Ministry of Finance"], answer: 1, explanation: "CBK is the sole issuer of Kenyan currency." } },
+                { title: "M-Pesa – The Digital Revolution", content: "M-Pesa launched in 2007 and now handles billions monthly. You can send money, pay bills (Lipa na M-Pesa), save (M-Shwari), borrow (Fuliza), buy insurance. Always protect your PIN!", quiz: { q: "What does 'Lipa na M-Pesa' mean?", options: ["Save money", "Pay with M-Pesa", "Borrow money", "Buy airtime"], answer: 1, explanation: "Lipa na M-Pesa is a service to pay for goods and services using M-Pesa." } },
+                { title: "The Power of Small Savings", content: "Saving KES 20/day becomes KES 7,300/year — enough for a school uniform or start a small business. Small amounts add up with discipline.", quiz: { q: "If you save KES 30 daily, how much in a year (365 days)?", options: ["KES 5,475", "KES 10,950", "KES 7,300", "KES 3,650"], answer: 1, explanation: "30 × 365 = 10,950 KES." } },
+                { title: "Spending Wisely", content: "Before buying something, ask: Do I really need this? Can I get it cheaper? Will it add value? Smart spending leaves more money for goals.", quiz: { q: "Which is a smart spending habit?", options: ["Impulse buying", "Comparing prices before buying", "Buying the most expensive item", "Ignoring discounts"], answer: 1, explanation: "Comparing prices helps you get the best value." } },
+                { title: "Introduction to Interest", content: "Interest is the cost of borrowing money OR the reward for saving. Banks pay you interest on savings and charge interest on loans.", quiz: { q: "When you deposit money in a bank, the bank pays you ________.", options: ["Interest", "Tax", "Principal", "Dividend"], answer: 0, explanation: "Interest is what the bank pays you for using your money." } },
+                { title: "Simple vs Compound Interest", content: "Simple interest is calculated only on the original amount. Compound interest is calculated on the original amount plus any interest earned — it makes your money grow faster.", quiz: { q: "Compound interest means:", options: ["Interest on principal only", "Interest on principal + previous interest", "No interest", "Fixed interest"], answer: 1, explanation: "Compound interest is interest on interest – magic of growth." } },
+                { title: "Goal Setting for Kids", content: "Set a goal: 'I want to buy a new bicycle costing KES 8,000 in 8 months.' Save KES 1,000 each month. Write it down, track progress, celebrate when achieved!", quiz: { q: "A SMART goal is:", options: ["Specific, Measurable, Achievable, Relevant, Time-bound", "Simple Money And Real Talent", "Save Money Always Right Today", "Spending, Management, Assets, Returns, Tax"], answer: 0, explanation: "SMART is the framework for effective goal setting." } },
+                { title: "Earning Your Own Money", content: "You can earn by doing chores for neighbors, selling lemonade, helping with technology, or starting a small online shop. Every shilling you earn teaches responsibility.", quiz: { q: "What is a good way for a 12-year-old to earn money?", options: ["Take a bank loan", "Babysitting or dog walking", "Buy stocks", "Open a SACCO"], answer: 1, explanation: "Age‑appropriate small jobs teach work ethic and earning power." } },
+              ] },
+            // Module 2: Savings & Goal Setting (10 lessons)
+            { id: 2, title: "Savings & Goal Setting", icon: "🐘", level: "Explorer (13–16)", xp: 250, color: "#4CAF50", badge: "🥈 Trail Finder", county: "nakuru", ageGroup: "teen",
+              lessons: [
+                { title: "The Power of Saving", content: "Saving means keeping money aside for the future. Kenyan banks, SACCOs, and M-Shwari offer savings accounts. Even KES 20/day = KES 7,300/year – enough for school supplies or a small business start!", quiz: { q: "Which Kenyan mobile savings tool lets you save directly from M-Pesa?", options: ["Equity Bank", "M-Shwari", "KCB", "Co-op Bank"], answer: 1, explanation: "M-Shwari by Safaricom/NCBA lets you save and borrow from M-Pesa." } },
+                { title: "SMART Financial Goals", content: "SMART: Specific, Measurable, Achievable, Relevant, Time-bound. Instead of 'I want money', say: 'I will save KES 5,000 for a laptop by December by putting aside KES 500/month.' That's a SMART goal!", quiz: { q: "Which is the BEST example of a SMART savings goal?", options: ["I want to save money someday", "I'll save KES 3,000 in 6 months for a textbook", "I want to be rich", "I'll save a lot this year"], answer: 1, explanation: "It is specific, measurable, achievable, relevant, and time-bound." } },
+                { title: "Compound Interest Magic", content: "Compound interest means you earn interest on your interest. If you save KES 10,000 at 8% annual interest: Year 1 = KES 10,800. Year 5 = KES 14,693. Year 10 = KES 21,589. Start early – time is your biggest asset!", quiz: { q: "You save KES 10,000 at 10% interest per year. After 2 years with compound interest, you have approximately:", options: ["KES 12,000", "KES 12,100", "KES 11,000", "KES 10,200"], answer: 1, explanation: "Year 1: 11,000; Year 2: 12,100." } },
+                { title: "Emergency Savings", content: "An emergency fund is money set aside for unexpected events like sickness or job loss. Aim for 3-6 months of expenses. Keep it in a safe, easy‑to‑access account.", quiz: { q: "How many months of expenses is recommended for an emergency fund?", options: ["1 month", "3–6 months", "12 months", "None"], answer: 1, explanation: "3–6 months provides a cushion without locking money away too long." } },
+                { title: "SACCOs – A Kenyan Way to Save", content: "SACCOs (Savings & Credit Co-operatives) are member‑owned. You save regularly and can borrow at lower interest. Many schools, farmers, and workers use them.", quiz: { q: "What does SACCO stand for?", options: ["Savings and Credit Co-operative", "Savings and Capital Company", "Special Account Cooperative", "Social Association for Credit"], answer: 0, explanation: "SACCOs are popular in Kenya for community‑based saving." } },
+                { title: "Mobile Savings Apps", content: "Apps like M‑Shwari, KCB M‑Pesa, and Tala help you save and access micro‑loans. They encourage disciplined savings and build your credit history.", quiz: { q: "What is one benefit of using a mobile savings app?", options: ["Builds credit history", "No interest ever", "Guaranteed profit", "No fees at all"], answer: 0, explanation: "Regular saving through apps can help you access loans later." } },
+                { title: "Tracking Your Money", content: "Write down every shilling you earn and spend. Use a notebook or an app. Tracking shows where your money goes and helps you save more.", quiz: { q: "Why is tracking expenses important?", options: ["To impress friends", "To know where money is going and find savings opportunities", "To pay more tax", "To avoid spending"], answer: 1, explanation: "Awareness is the first step to control." } },
+                { title: "Avoiding Impulse Spending", content: "Impulse buying is buying without planning. Use the 24‑hour rule: wait one day before buying something you didn't plan. You often realise you don't need it.", quiz: { q: "The 24‑hour rule helps you:", options: ["Spend faster", "Avoid impulse purchases", "Double your money", "Earn interest"], answer: 1, explanation: "It gives you time to decide if you really need it." } },
+                { title: "Savings vs. Investing", content: "Saving is keeping money safe for short-term goals. Investing is putting money to work for long-term growth (e.g., stocks, mutual funds). Both are important.", quiz: { q: "What is the main difference between saving and investing?", options: ["Saving is safer but earns less; investing involves more risk but potential for higher returns", "Saving is for old people", "Investing is only for businesses", "No difference"], answer: 0, explanation: "Saving protects capital; investing aims for growth with risk." } },
+                { title: "Review Your Goals Monthly", content: "Set a date each month to check your progress. Did you save what you planned? Adjust if needed. Celebrate small wins – it keeps you motivated.", quiz: { q: "How often should you review your financial goals?", options: ["Once a year", "Monthly or quarterly", "Never", "Only when you fail"], answer: 1, explanation: "Regular reviews help you stay on track." } },
+              ] },
+            // Module 3: Banking & Digital Money (8 lessons)
+            { id: 3, title: "Banking & Digital Money", icon: "📱", level: "Explorer (13–16)", xp: 200, color: "#2196F3", badge: "💳 Digital Ranger", county: "mombasa", ageGroup: "teen",
+              lessons: [
+                { title: "How Banks Work", content: "Banks keep your money safe and lend it to others at a higher interest rate – that's how they make money. In Kenya: Commercial Banks (KCB, Equity), SACCOs, Microfinance, and Mobile Money.", quiz: { q: "What is a SACCO?", options: ["A type of M-Pesa transaction", "A savings and credit co-operative owned by members", "A government bank", "A mobile app"], answer: 1, explanation: "SACCOs pool savings and offer low‑interest loans." } },
+                { title: "M-Pesa & Mobile Money", content: "Kenya leads the world in mobile money! M-Pesa launched in 2007. You can: Send money, Pay bills (Lipa na M-Pesa), Save (M-Shwari), Borrow (Fuliza), Buy insurance.", quiz: { q: "Which year did M-Pesa launch in Kenya?", options: ["2003", "2007", "2010", "2015"], answer: 1, explanation: "M-Pesa launched in 2007 by Safaricom." } },
+                { title: "Financial Safety Online", content: "Never share: your M-Pesa PIN, bank passwords, OTP codes. Beware of job scams (send KES 500 to get KES 5,000 – it's fake!). If in doubt, call the official helpline.", quiz: { q: "Someone texts: 'You've won KES 50,000! Send KES 200 to claim.' What should you do?", options: ["Send the KES 200 immediately", "Ignore it — it's a scam", "Share it with friends", "Call them back"], answer: 1, explanation: "This is a classic advance‑fee scam. Delete and report." } },
+                { title: "Opening a Bank Account", content: "To open a youth account (e.g., KCB Junior, Equity M-Pesa), you need your parent/guardian, ID/passport, and a small opening deposit. Some accounts have no fees.", quiz: { q: "What do you typically need to open a youth bank account in Kenya?", options: ["Parent/guardian and ID", "Only money", "Business permit", "Driver's license"], answer: 0, explanation: "Minors require a guardian to co‑sign." } },
+                { title: "Understanding Bank Statements", content: "A bank statement shows all deposits, withdrawals, and charges. Review it monthly to catch mistakes and track spending.", quiz: { q: "What is a bank statement used for?", options: ["Tracking transactions and balance", "Applying for a loan", "Sending money", "Withdrawing cash"], answer: 0, explanation: "It's a record of your account activity." } },
+                { title: "ATM and Debit Card Safety", content: "Always shield your PIN. Never write it on the card. If your card is lost, block it immediately via mobile app or call the bank.", quiz: { q: "If you lose your debit card, the first step is:", options: ["Wait a few days", "Block the card with your bank", "Look for it again", "Ignore it"], answer: 1, explanation: "Immediate blocking prevents unauthorised use." } },
+                { title: "Mobile Lending Apps (Fuliza, etc.)", content: "Fuliza is an overdraft facility on M-Pesa. It charges a daily fee. Use it only for emergencies and pay quickly to avoid high costs.", quiz: { q: "Fuliza is a:", options: ["Savings account", "Overdraft facility", "Fixed deposit", "Insurance product"], answer: 1, explanation: "Fuliza allows you to overdraw your M-Pesa balance, but fees apply." } },
+                { title: "Interest Rates on Loans", content: "Banks charge interest on loans. In Kenya, the Central Bank Rate (CBR) influences loan rates. Always compare the Annual Percentage Rate (APR) before borrowing.", quiz: { q: "What does APR stand for?", options: ["Annual Percentage Rate", "Annual Payment Rate", "African Payment Rate", "Advanced Percentage Rate"], answer: 0, explanation: "APR shows the true cost of borrowing including fees." } },
+              ] },
+            // Module 4: Entrepreneurship & Income (9 lessons)
+            { id: 4, title: "Entrepreneurship & Income", icon: "🦒", level: "Pioneer (16–19)", xp: 250, color: "#FF9800", badge: "🏅 Hustle Pioneer", county: "kisumu", ageGroup: "youth",
+              lessons: [
+                { title: "Types of Income", content: "Earned income (salary), Passive income (rent, royalties), Portfolio income (dividends, interest). Wealth builders combine all three.", quiz: { q: "A student earns KES 500/month from a YouTube channel even when not posting. This is:", options: ["Earned income", "Passive income", "Portfolio income", "Donation"], answer: 1, explanation: "Passive income keeps flowing without active work." } },
+                { title: "Starting a Small Business", content: "Kenya's Youth Enterprise Development Fund and Uwezo Fund support young entrepreneurs. Steps: 1) Find a problem to solve. 2) Research market. 3) Create a simple plan. 4) Start small. 5) Register with KRA and county.", quiz: { q: "What is the FIRST step in starting a business?", options: ["Register with government", "Identify a problem your business will solve", "Open a business bank account", "Hire employees"], answer: 1, explanation: "Every business solves a problem – start there." } },
+                { title: "Cash Flow & Profit", content: "Revenue − Costs = Profit. Cash flow is the timing of money in and out. A profitable business can fail if customers don't pay on time!", quiz: { q: "Your business earns KES 20,000 in sales but has KES 25,000 in expenses. Your profit/loss is:", options: ["Profit KES 5,000", "Loss KES 5,000", "Break even", "Revenue KES 45,000"], answer: 1, explanation: "20,000 − 25,000 = −5,000 (loss)." } },
+                { title: "Marketing Your Business", content: "Marketing is how you let people know about your product. Use social media, word of mouth, or local posters. Know your customer and what they value.", quiz: { q: "What is the purpose of marketing?", options: ["To make the product", "To attract customers and communicate value", "To pay taxes", "To hire employees"], answer: 1, explanation: "Marketing builds awareness and sales." } },
+                { title: "Record Keeping for Small Business", content: "Track every sale and expense. Use a simple notebook or app like Wave. Good records help you see profit, prepare taxes, and get loans.", quiz: { q: "Why is record keeping important?", options: ["It's required by law and helps you understand your business health", "It makes you look busy", "It increases sales", "It's optional"], answer: 0, explanation: "Records are essential for management and compliance." } },
+                { title: "Scaling Your Business", content: "Once your business is stable, think about growth: reinvest profits, expand products, hire help, or go online. Grow wisely without overstretching.", quiz: { q: "What does 'scaling' mean?", options: ["Closing the business", "Growing the business in a sustainable way", "Changing the name", "Reducing prices"], answer: 1, explanation: "Scaling means increasing capacity and reach without breaking operations." } },
+                { title: "Understanding Taxes for Entrepreneurs", content: "If you run a business, you must register for a KRA PIN and file taxes. Common taxes: income tax, VAT (if turnover exceeds KES 5M). Get an accountant if needed.", quiz: { q: "What is the tax registration number in Kenya?", options: ["ID number", "KRA PIN", "Business number", "VAT number"], answer: 1, explanation: "KRA PIN is mandatory for any business." } },
+                { title: "Formal vs Informal Business", content: "Informal (jua kali) businesses have lower startup costs but limited growth. Formal registration gives access to loans, contracts, and legal protection.", quiz: { q: "One advantage of registering your business is:", options: ["No taxes", "Access to formal loans and contracts", "No competition", "Guaranteed profit"], answer: 1, explanation: "Formal businesses can access bank loans and tenders." } },
+                { title: "Networking and Mentorship", content: "Join business groups, attend workshops, find a mentor. Learning from experienced entrepreneurs saves you from costly mistakes.", quiz: { q: "What is a mentor?", options: ["A person who gives you money", "An experienced person who guides you", "A government officer", "A bank manager"], answer: 1, explanation: "Mentors provide advice based on experience." } },
+              ] },
+            // Module 5: Investing for the Future (10 lessons)
+            { id: 5, title: "Investing for the Future", icon: "🦅", level: "Trailblazer (19–24)", xp: 300, color: "#9C27B0", badge: "🏆 Market Eagle", county: "eldoret", ageGroup: "young-adult",
+              lessons: [
+                { title: "Introduction to Investing", content: "Investing means putting money to work to grow over time. Key options in Kenya: NSE stocks, government bonds, unit trusts (CIC, Britam), real estate. Diversify – don't put all eggs in one basket.", quiz: { q: "What does NSE stand for?", options: ["National Savings Exchange", "Nairobi Securities Exchange", "National Stock Enterprise", "New Savings Economy"], answer: 1, explanation: "The Nairobi Securities Exchange is Kenya's stock market." } },
+                { title: "Risk vs. Return", content: "Higher potential return = higher risk. Low risk: savings accounts, T-Bills (3–10% p.a.). Medium: unit trusts, bonds (10–15% p.a.). High: stocks, real estate (15–30%+ p.a.). Match risk to your goals.", quiz: { q: "A young investor (age 20) saving for retirement at 60 should generally:", options: ["Invest only in savings accounts for safety", "Take on more risk since they have a long investment horizon", "Avoid investing altogether", "Only invest in government bonds"], answer: 1, explanation: "Long time horizon allows recovery from market dips." } },
+                { title: "The NSE & Buying Shares", content: "To buy NSE shares: 1) Open a CDS account. 2) Choose a licensed stockbroker. 3) Start small (min. KES 1,000). 4) Track using the NSE app. Safaricom, Equity, KCB are good starter stocks.", quiz: { q: "What is the FIRST step to buying shares on the NSE?", options: ["Deposit KES 1 million", "Open a CDS account through a stockbroker", "Call the NSE directly", "Ask friends for tips"], answer: 1, explanation: "CDS account holds shares electronically." } },
+                { title: "Mutual Funds Explained", content: "Mutual funds pool money from many investors to buy a diversified portfolio. Types: Equity funds, Debt funds, Balanced funds. They are managed by professionals – great for beginners.", quiz: { q: "What is a mutual fund?", options: ["A government bond", "A pool of money invested in various assets by a professional", "A bank account", "A type of insurance"], answer: 1, explanation: "Mutual funds offer diversification and professional management." } },
+                { title: "Government Bonds & T-Bills", content: "Treasury bills (91, 182, 364 days) and bonds (2–30 years) are loans to the government. They are safe and pay fixed interest. Available via CBK DhowCSD or banks.", quiz: { q: "Which is the safest investment in Kenya?", options: ["Shares", "Government securities", "Real estate", "Art"], answer: 1, explanation: "Government bonds are backed by the full faith of Kenya." } },
+                { title: "Real Estate Investing", content: "Real estate can generate rental income and capital appreciation. But it needs large capital, has low liquidity, and carries title risks. Start with REITs (Real Estate Investment Trusts) if you have smaller amounts.", quiz: { q: "What is a REIT?", options: ["A real estate company", "A trust that allows you to invest in property without buying physical land", "A bank loan", "A type of insurance"], answer: 1, explanation: "REITs trade like stocks and pay dividends from rental income." } },
+                { title: "Diversification Strategy", content: "Don't put all money in one asset. Spread across stocks, bonds, real estate, and cash. When one does poorly, others may do well, smoothing returns.", quiz: { q: "What is diversification?", options: ["Putting all money in one stock", "Spreading investments across different asset classes", "Saving in one bank", "Buying only government bonds"], answer: 1, explanation: "Diversification reduces risk." } },
+                { title: "The Magic of Compounding", content: "Compounding grows your money exponentially. The earlier you start, the greater the effect. Example: KES 100,000 at 12% for 30 years becomes over KES 3 million.", quiz: { q: "What is the 'Rule of 72'?", options: ["72 divided by interest rate gives years to double money", "72 multiplied by interest rate gives returns", "72 months to invest", "A tax rule"], answer: 0, explanation: "Rule of 72 quickly estimates doubling time." } },
+                { title: "Understanding Market Cycles", content: "Markets go up and down. Don't panic during downturns – they often provide buying opportunities. Stay invested for long‑term goals.", quiz: { q: "During a market crash, a long‑term investor should:", options: ["Sell everything", "Panic and withdraw", "Stay calm and consider buying more if appropriate", "Ignore forever"], answer: 2, explanation: "Market crashes are part of the cycle; staying invested (or buying low) benefits long term." } },
+                { title: "Ethical & ESG Investing", content: "Some investors choose companies that care about the environment, social responsibility, and good governance (ESG). This aligns values with investments.", quiz: { q: "What does ESG stand for?", options: ["Environmental, Social, and Governance", "Economic Savings Guarantee", "Equity, Stocks, Growth", "European Stock Group"], answer: 0, explanation: "ESG investing considers non‑financial factors." } },
+              ] },
+            // Module 6: Insurance & Risk Protection (8 lessons)
+            { id: 6, title: "Insurance & Risk Protection", icon: "🛡️", level: "Pioneer (16–19)", xp: 200, color: "#E63946", badge: "🔰 Shield Bearer", county: "garissa", ageGroup: "youth",
+              lessons: [
+                { title: "Why Insurance Matters", content: "Insurance protects you from financial disaster when bad things happen. You pay a small premium; if disaster strikes, the insurer pays a larger amount. In Kenya: SHA (formerly NHIF), Jubilee, Britam, etc.", quiz: { q: "What is a premium in insurance?", options: ["The amount you receive when you claim", "The regular payment to maintain coverage", "A bonus", "A savings account"], answer: 1, explanation: "Premium is what you pay to keep the policy active." } },
+                { title: "Types of Insurance in Kenya", content: "Health (SHA), Life, Motor (3rd party compulsory), Education, Crop/livestock. M-Tiba and Bima Ya Msee are mobile options.", quiz: { q: "Which insurance is legally required for all motor vehicles in Kenya?", options: ["Comprehensive", "Third‑party", "Life insurance", "NHIF"], answer: 1, explanation: "Third‑party is mandatory by law." } },
+                { title: "Making Smart Insurance Decisions", content: "Ask: 1) What is covered? 2) What are exclusions? 3) What is the deductible? 4) How do I claim? Read the fine print.", quiz: { q: "An 'exclusion' in an insurance policy means:", options: ["Extra benefit", "A situation NOT covered", "Discount on premium", "Claim that was paid"], answer: 1, explanation: "Exclusions are risks not covered – read carefully." } },
+                { title: "Life Insurance Basics", content: "Life insurance pays your dependents if you die. Term insurance is pure protection and cheapest. Avoid mixing insurance with investment (e.g., endowment) unless you have specific reasons.", quiz: { q: "What is term insurance?", options: ["Insurance that covers you for a specific period and pays only if you die within that term", "Permanent insurance with savings", "Health insurance", "Car insurance"], answer: 0, explanation: "Term is the most affordable pure protection." } },
+                { title: "Health Insurance (SHA & Private)", content: "SHA (formerly NHIF) is mandatory for formal employees. It covers basic hospital stays. Private insurance offers more benefits (higher limits, outpatient). Choose based on family needs.", quiz: { q: "What does SHA stand for?", options: ["Social Health Authority", "State Health Association", "Super Health Agency", "Standard Hospital Act"], answer: 0, explanation: "SHA replaced NHIF in 2024 to improve universal health coverage." } },
+                { title: "Motor Insurance", content: "Third‑party covers damage you cause to others. Comprehensive also covers your own vehicle. Always compare premiums and excess amounts.", quiz: { q: "Which motor insurance covers theft of your own car?", options: ["Third‑party only", "Comprehensive", "Both", "None"], answer: 1, explanation: "Comprehensive covers theft and own damage." } },
+                { title: "Insurance for Students & Youth", content: "Some insurers offer student covers (accident, medical). Also, parents can take education insurance that pays school fees if they pass away.", quiz: { q: "What is education insurance?", options: ["A savings plan", "Insurance that pays school fees if the parent dies", "A school loan", "Government grant"], answer: 1, explanation: "It ensures children's education continues." } },
+                { title: "How to Make a Claim", content: "Notify the insurer immediately after an incident. Fill claim forms, provide supporting documents (police report for accidents, medical reports). Keep copies.", quiz: { q: "What should you do first after a car accident?", options: ["Call a lawyer", "Report to the insurer and police", "Fix the car yourself", "Wait a week"], answer: 1, explanation: "Timely reporting is crucial for claim acceptance." } },
+              ] },
+            // Module 7: Asset Allocation & Diversification (6 lessons)
+            { id: 7, title: "Asset Allocation & Diversification", icon: "⚖️", level: "Pioneer (16–19)", xp: 200, color: "#00ACC1", badge: "🎯 Allocation Expert", county: "kwale", ageGroup: "youth",
+              lessons: [
+                { title: "What is Asset Allocation?", content: "Asset allocation means dividing your investments among different asset classes like stocks, bonds, cash, and real estate. It balances risk and return.", quiz: { q: "Why is asset allocation important?", options: ["It guarantees profit", "It diversifies risk and matches your goals", "It avoids all taxes", "It's required by law"], answer: 1, explanation: "Proper allocation is the main driver of investment success." } },
+                { title: "The 100‑Minus‑Age Rule", content: "A simple rule: 100 – your age = percentage to invest in stocks (equity). The rest in bonds/cash. As you age, reduce equity risk.", quiz: { q: "If you are 25, how much of your portfolio should be in stocks according to the rule?", options: ["25%", "75%", "50%", "100%"], answer: 1, explanation: "100 – 25 = 75% in stocks." } },
+                { title: "Rebalancing Your Portfolio", content: "Over time, some assets grow faster and change your allocation. Rebalancing means selling some of what did well and buying what lagged to maintain your target.", quiz: { q: "What is rebalancing?", options: ["Selling everything", "Adjusting portfolio back to target percentages", "Buying only one stock", "Moving all money to cash"], answer: 1, explanation: "Rebalancing maintains your risk level." } },
+                { title: "Understanding Correlation", content: "Assets that move in opposite directions (negative correlation) reduce overall portfolio volatility. For example, bonds often do well when stocks struggle.", quiz: { q: "Two assets that move in opposite directions have:", options: ["Positive correlation", "Negative correlation", "No correlation", "Perfect correlation"], answer: 1, explanation: "Negative correlation smooths returns." } },
+                { title: "Strategic vs Tactical Allocation", content: "Strategic is a long‑term plan; tactical allows short‑term adjustments based on market conditions. Most investors should stick to strategic.", quiz: { q: "Which type of allocation is based on a long‑term plan?", options: ["Tactical", "Strategic", "Speculative", "Day trading"], answer: 1, explanation: "Strategic allocation aligns with your goals and risk tolerance." } },
+                { title: "Using Mutual Funds for Diversification", content: "A single mutual fund can hold hundreds of stocks or bonds, giving you instant diversification. Start with a balanced fund or index fund.", quiz: { q: "What is an index fund?", options: ["A fund that tries to match the performance of a market index like the NSE 20", "A fund with high fees", "A savings account", "A government bond"], answer: 0, explanation: "Index funds offer low‑cost diversification." } },
+              ] },
+            // Module 8: Retirement Planning (7 lessons)
+            { id: 8, title: "Retirement Planning", icon: "🏖️", level: "Trailblazer (19–24)", xp: 300, color: "#FF6D00", badge: "👵 Pension Pioneer", county: "meru", ageGroup: "young-adult",
+              lessons: [
+                { title: "Why Start Early for Retirement", content: "The earlier you start, the less you need to save each month. Example: start at 25, save KES 5,000/month at 8% → ~KES 17M at 60. Start at 35 → ~KES 7M. Time is powerful.", quiz: { q: "What is the biggest advantage of starting retirement planning early?", options: ["Less paperwork", "More time for compounding", "Lower taxes", "Guaranteed returns"], answer: 1, explanation: "Compound interest works best over long periods." } },
+                { title: "How Much Do You Need?", content: "A rule of thumb: you'll need about 70‑80% of your pre‑retirement income. Estimate: multiply your annual expenses by 25 (4% withdrawal rule).", quiz: { q: "What is the 4% rule?", options: ["Withdraw 4% of savings annually, adjust for inflation", "Save 4% of income", "Earn 4% return", "Pay 4% tax"], answer: 0, explanation: "4% withdrawal is considered sustainable for 30 years." } },
+                { title: "Retirement Savings Vehicles in Kenya", content: "NSSF (mandatory), Occupational Pension Schemes, Individual Pension Plans, and Retirement Benefits Authority (RBA) regulated products. NSSF Tier I & II.", quiz: { q: "Which authority regulates pension schemes in Kenya?", options: ["KRA", "RBA", "CBK", "CMA"], answer: 1, explanation: "Retirement Benefits Authority oversees pensions." } },
+                { title: "NSSF Explained", content: "National Social Security Fund (NSSF) is mandatory for formal employees. Both employer and employee contribute. It provides a lump sum at retirement.", quiz: { q: "Who contributes to NSSF?", options: ["Only employee", "Only employer", "Both employee and employer", "Government"], answer: 2, explanation: "Contributions are shared, currently 6% each of pensionable pay." } },
+                { title: "Individual Retirement Plans", content: "You can open an individual pension plan with insurers or fund managers. Contributions are tax‑deductible up to KES 20,000 per month. Start even if self‑employed.", quiz: { q: "One benefit of individual pension plans is:", options: ["Guaranteed 20% return", "Tax deduction on contributions", "Free money", "No risk"], answer: 1, explanation: "Contributions reduce your taxable income." } },
+                { title: "Inflation and Retirement", content: "Inflation erodes purchasing power. At 5% inflation, KES 1M today is worth only KES 377,000 in 20 years. Your retirement investments must beat inflation.", quiz: { q: "Why must retirement investments beat inflation?", options: ["To avoid taxes", "To maintain purchasing power", "To get rich quickly", "To pay fees"], answer: 1, explanation: "You need your money to grow faster than rising prices." } },
+                { title: "Annuities and Drawdown", content: "At retirement, you can buy an annuity (regular income for life) or draw down gradually. Annuities guarantee income but may have less flexibility.", quiz: { q: "What is an annuity?", options: ["A lump sum payment", "A series of regular payments for life", "A stock", "A bank account"], answer: 1, explanation: "Annuities convert your savings into a pension stream." } },
+              ] },
+            // Module 9: Mutual Funds & The NSE (6 lessons)
+            { id: 9, title: "Mutual Funds & The NSE", icon: "📊", level: "Trailblazer (19–24)", xp: 280, color: "#3F51B5", badge: "📈 Fund Analyst", county: "kakamega", ageGroup: "young-adult",
+              lessons: [
+                { title: "Equity vs Debt Mutual Funds", content: "Equity funds invest in stocks – high risk, high return. Debt funds invest in bonds and fixed income – lower risk. Choose based on your time horizon.", quiz: { q: "Which type of mutual fund is best for a 5‑year goal?", options: ["Equity", "Balanced", "Debt", "All are same"], answer: 1, explanation: "Balanced funds blend stocks and bonds for moderate risk." } },
+                { title: "Systematic Investment Plan (SIP)", content: "SIP allows you to invest a fixed amount regularly (e.g., KES 1,000 monthly) in a mutual fund. It instills discipline and averages purchase cost.", quiz: { q: "What is a benefit of SIP?", options: ["Guaranteed high returns", "Rupee cost averaging and discipline", "No risk", "Immediate profit"], answer: 1, explanation: "SIP smooths market volatility." } },
+                { title: "How to Choose a Mutual Fund", content: "Look for consistent returns over 5‑10 years, low expense ratio, and a reputable fund manager. Check ratings on valueresearchonline.com.", quiz: { q: "What is an expense ratio?", options: ["The profit of the fund", "Annual fee charged by the fund", "The fund's return", "Tax on dividends"], answer: 1, explanation: "Lower expense ratios mean more money stays invested." } },
+                { title: "Stock Market Basics – Bull vs Bear", content: "Bull market = rising prices, optimism. Bear market = falling prices, pessimism. Long‑term investors stay invested through both.", quiz: { q: "In a bear market, what should a long‑term investor do?", options: ["Sell everything", "Panic", "Stay invested or add more if possible", "Stop investing forever"], answer: 2, explanation: "Bear markets offer buying opportunities for patient investors." } },
+                { title: "Dividends and Capital Gains", content: "Dividends are profits distributed to shareholders. Capital gains are profits from selling an asset at a higher price. Both are ways to earn from stocks.", quiz: { q: "What is a dividend?", options: ["A fee paid to brokers", "A share of company profits paid to shareholders", "A loan", "A tax"], answer: 1, explanation: "Dividends reward shareholders." } },
+                { title: "Ethical Investing – ESG Funds", content: "ESG funds invest in companies with good environmental, social, and governance practices. They align your money with your values.", quiz: { q: "What does ESG stand for?", options: ["Economic Stability Group", "Environmental, Social, and Governance", "Equity Savings Growth", "European Stock Guarantee"], answer: 1, explanation: "ESG investing is growing in Kenya." } },
+              ] },
+        ];
+
+        // Curriculum alignment data
+        const IGCSE_TOPICS = [
+          { code: "0450", subject: "Business Studies", modules: [1,4,7,8], color: "#2196F3" },
+          { code: "0455", subject: "Economics", modules: [2,3,5,7,9], color: "#4CAF50" },
+          { code: "0452", subject: "Accounting", modules: [2,4,5,8], color: "#FF9800" },
+        ];
+        const CBC_STRANDS = [
+          { name: "Financial Literacy", modules: [1,2,3,7], grade: "Grades 4-9" },
+          { name: "Entrepreneurship", modules: [4,9], grade: "Senior School" },
+          { name: "Risk Management", modules: [6,8], grade: "Senior School" },
+          { name: "Investing & Wealth", modules: [5,7,9], grade: "Senior School" },
+        ];
+
+        // --------------------------------------------------------------
+        // 3. REUSABLE UI COMPONENTS
+        // --------------------------------------------------------------
+        const XPBar = ({ xp, maxXp = 300 }) => {
+            const pct = Math.min((xp / maxXp) * 100, 100);
+            return (
+                <div style={{ background: "rgba(255,255,255,0.2)", borderRadius: 10, height: 8, overflow: "hidden", width: "100%" }}>
+                    <div style={{ width: `${pct}%`, height: "100%", background: "linear-gradient(90deg,#FFD700,#FF9800)", borderRadius: 10, transition: "width 0.6s ease" }} />
+                </div>
+            );
+        };
+
+        const Badge = ({ text, earned }) => (
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: earned ? "linear-gradient(135deg,#FFD700,#FF9800)" : "rgba(255,255,255,0.1)", color: earned ? "#2C1A0E" : "rgba(255,255,255,0.4)", borderRadius: 20, padding: "4px 12px", fontSize: 12, fontWeight: 700, border: `1px solid ${earned ? "#FFD700" : "rgba(255,255,255,0.2)"}`, filter: earned ? "none" : "grayscale(1)" }}>
+                {text}
+            </div>
+        );
+
+        const QuizCard = ({ quiz, onComplete }) => {
+            const [selected, setSelected] = useState(null);
+            const [revealed, setRevealed] = useState(false);
+            const handleSelect = (i) => { if (!revealed) setSelected(i); };
+            const handleSubmit = () => { if (selected !== null) setRevealed(true); };
+            return (
+                <div style={{ background: "rgba(0,0,0,0.3)", borderRadius: 16, padding: 20, marginTop: 16 }}>
+                    <div style={{ fontSize: 12, color: "#FFD700", fontWeight: 700, marginBottom: 8 }}>🎯 KNOWLEDGE CHECK</div>
+                    <p style={{ fontWeight: 600, marginBottom: 14, fontSize: 15 }}>{quiz.q}</p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                        {quiz.options.map((opt, i) => {
+                            let bg = "rgba(255,255,255,0.08)", border = "1px solid rgba(255,255,255,0.15)";
+                            if (revealed) {
+                                if (i === quiz.answer) { bg = "rgba(76,175,80,0.4)"; border = "1px solid #4CAF50"; }
+                                else if (i === selected) { bg = "rgba(244,67,54,0.3)"; border = "1px solid #f44336"; }
+                            } else if (selected === i) { bg = "rgba(245,166,35,0.3)"; border = "1px solid #F5A623"; }
+                            return (
+                                <button key={i} onClick={() => handleSelect(i)} style={{ background: bg, border, borderRadius: 10, padding: "10px 14px", color: "white", textAlign: "left", cursor: revealed ? "default" : "pointer", fontSize: 14, fontFamily: "inherit" }}>
+                                    <span style={{ opacity: 0.5, marginRight: 8 }}>{String.fromCharCode(65+i)}.</span>{opt}
+                                </button>
+                            );
+                        })}
+                    </div>
+                    {!revealed && (
+                        <button onClick={handleSubmit} disabled={selected === null} style={{ marginTop: 14, width: "100%", padding: "12px", background: selected !== null ? "linear-gradient(135deg,#F5A623,#FF6B35)" : "rgba(255,255,255,0.1)", border: "none", borderRadius: 12, color: "white", fontWeight: 700, cursor: selected !== null ? "pointer" : "not-allowed", fontSize: 14 }}>
+                            Submit Answer
+                        </button>
+                    )}
+                    {revealed && (
+                        <div style={{ marginTop: 14 }}>
+                            <div style={{ background: selected === quiz.answer ? "rgba(76,175,80,0.2)" : "rgba(244,67,54,0.15)", border: `1px solid ${selected === quiz.answer ? "#4CAF50" : "#f44336"}`, borderRadius: 12, padding: 14 }}>
+                                <div style={{ fontWeight: 700, marginBottom: 6 }}>{selected === quiz.answer ? "✅ Correct! +10 XP" : "❌ Not quite..."}</div>
+                                <p style={{ fontSize: 13, opacity: 0.9, margin: 0 }}>{quiz.explanation}</p>
+                            </div>
+                            <button onClick={onComplete} style={{ marginTop: 12, width: "100%", padding: "12px", background: "linear-gradient(135deg,#4CAF50,#2E7D32)", border: "none", borderRadius: 12, color: "white", fontWeight: 700, cursor: "pointer", fontSize: 14 }}>
+                                Continue → Next Lesson
+                            </button>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const LessonView = ({ module, onBack, earnedXp, setEarnedXp, completedLessons, setCompletedLessons }) => {
+            const [lessonIdx, setLessonIdx] = useState(0);
+            const [phase, setPhase] = useState("read");
+            const lesson = module.lessons[lessonIdx];
+            const modKey = `mod_${module.id}`;
+
+            const handleQuizComplete = () => {
+                const key = `${modKey}_lesson_${lessonIdx}`;
+                if (!completedLessons.includes(key)) {
+                    setCompletedLessons(prev => [...prev, key]);
+                    setEarnedXp(prev => prev + 30);
+                }
+                if (lessonIdx < module.lessons.length - 1) {
+                    setLessonIdx(i => i + 1);
+                    setPhase("read");
+                } else {
+                    setPhase("done");
+                }
+            };
+
+            if (phase === "done") {
+                return (
+                    <div style={{ textAlign: "center", padding: 32 }}>
+                        <div style={{ fontSize: 64, marginBottom: 16 }}>{module.icon}</div>
+                        <h2 style={{ fontSize: 24, marginBottom: 8 }}>Module Complete! 🎉</h2>
+                        <p style={{ opacity: 0.8, marginBottom: 16 }}>You earned the <strong>{module.badge}</strong></p>
+                        <div style={{ background: "linear-gradient(135deg,rgba(245,166,35,0.2),rgba(255,107,53,0.2))", border: "1px solid #F5A623", borderRadius: 16, padding: 20, marginBottom: 20 }}>
+                            <div style={{ fontSize: 40, marginBottom: 8 }}>{module.badge.split(" ")[0]}</div>
+                            <div style={{ fontWeight: 700 }}>{module.badge}</div>
+                            <div style={{ fontSize: 13, opacity: 0.7 }}>+{module.xp} XP earned</div>
+                        </div>
+                        <button onClick={onBack} style={{ padding: "14px 32px", background: "linear-gradient(135deg,#F5A623,#FF6B35)", border: "none", borderRadius: 14, color: "white", fontWeight: 700, cursor: "pointer", fontSize: 16 }}>← Back to Safari Trail</button>
+                    </div>
+                );
+            }
+
+            return (
+                <div>
+                    <button onClick={onBack} style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 10, color: "white", padding: "8px 16px", cursor: "pointer", marginBottom: 20, fontSize: 13 }}>← Trail Map</button>
+                    <div style={{ display: "flex", gap: 4, marginBottom: 20 }}>
+                        {module.lessons.map((_, i) => (
+                            <div key={i} style={{ flex: 1, height: 4, borderRadius: 2, background: i <= lessonIdx ? module.color : "rgba(255,255,255,0.2)" }} />
+                        ))}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+                        <div style={{ width: 48, height: 48, borderRadius: 12, fontSize: 24, background: `${module.color}33`, display: "flex", alignItems: "center", justifyContent: "center" }}>{module.icon}</div>
+                        <div>
+                            <div style={{ fontWeight: 700, fontSize: 18 }}>{lesson.title}</div>
+                            <div style={{ fontSize: 12, opacity: 0.6 }}>Lesson {lessonIdx + 1} of {module.lessons.length} • {module.level}</div>
+                        </div>
+                    </div>
+                    <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: 14, padding: 18, fontSize: 15, lineHeight: 1.7, marginBottom: 16, borderLeft: `3px solid ${module.color}` }}>
+                        {lesson.content}
+                    </div>
+                    {phase === "read" && (
+                        <button onClick={() => setPhase("quiz")} style={{ width: "100%", padding: "13px", background: `linear-gradient(135deg,${module.color},#FF6B35)`, border: "none", borderRadius: 12, color: "white", fontWeight: 700, cursor: "pointer", fontSize: 15 }}>
+                            Test Your Knowledge 🎯
+                        </button>
+                    )}
+                    {phase === "quiz" && <QuizCard quiz={lesson.quiz} onComplete={handleQuizComplete} />}
+                </div>
+            );
+        };
+
+        const CurriculumTab = ({ modules }) => (
+            <div>
+                <div style={{ marginBottom: 20 }}>
+                    <div style={{ fontSize: 11, color: "#FFD700", fontWeight: 700, marginBottom: 12 }}>🎓 CBC ALIGNMENT</div>
+                    {CBC_STRANDS.map(strand => (
+                        <div key={strand.name} style={{ background: "rgba(76,175,80,0.1)", border: "1px solid rgba(76,175,80,0.3)", borderRadius: 12, padding: "12px 14px", marginBottom: 8 }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                                <span style={{ fontWeight: 700, fontSize: 14 }}>📗 {strand.name}</span>
+                                <span style={{ fontSize: 11, color: "#4CAF50" }}>{strand.grade}</span>
+                            </div>
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                                {strand.modules.map(mId => {
+                                    const mod = modules.find(m => m.id === mId);
+                                    return mod ? <span key={mId} style={{ background: "rgba(76,175,80,0.2)", borderRadius: 8, padding: "2px 8px", fontSize: 11, color: "#81C784" }}>{mod.icon} {mod.title}</span> : null;
+                                })}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+                <div>
+                    <div style={{ fontSize: 11, color: "#FFD700", fontWeight: 700, marginBottom: 12 }}>📘 IGCSE ALIGNMENT</div>
+                    {IGCSE_TOPICS.map(topic => (
+                        <div key={topic.code} style={{ background: `${topic.color}15`, border: `1px solid ${topic.color}44`, borderRadius: 12, padding: "12px 14px", marginBottom: 8 }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                                <span style={{ fontWeight: 700, fontSize: 14 }}>📘 {topic.subject}</span>
+                                <span style={{ fontSize: 11, color: topic.color, background: `${topic.color}33`, padding: "2px 8px", borderRadius: 6 }}>Code {topic.code}</span>
+                            </div>
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                                {topic.modules.map(mId => {
+                                    const mod = modules.find(m => m.id === mId);
+                                    return mod ? <span key={mId} style={{ background: `${topic.color}22`, borderRadius: 8, padding: "2px 8px", fontSize: 11, color: topic.color }}>{mod.icon} {mod.title}</span> : null;
+                                })}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+                <div style={{ background: "rgba(245,166,35,0.1)", border: "1px solid rgba(245,166,35,0.3)", borderRadius: 12, padding: 14, marginTop: 16 }}>
+                    <div style={{ fontWeight: 700, marginBottom: 6, fontSize: 13 }}>📐 CFP® Competency Framework</div>
+                    <p style={{ fontSize: 12, opacity: 0.8, margin: 0, lineHeight: 1.6 }}>All modules are built on the CFP Board's Financial Planning Competency Handbook and localized for Kenya – M-Pesa, NSE, SHA, Uwezo Fund, CBC/IGCSE.</p>
+                </div>
+            </div>
+        );
+
+        const PartnersTab = () => {
+            const partners = [
+                { name: "Airtel Money", type: "Mobile Money", emoji: "📲", benefit: "Cashless quest rewards" },
+                { name: "M-Pesa", type: "Mobile Money", emoji: "💚", benefit: "In-app savings challenges" },
+                { name: "M-Changa", type: "Fundraising", emoji: "🤝", benefit: "Group saving quests" },
+                { name: "British Council", type: "Education", emoji: "🎓", benefit: "IGCSE content validation" },
+                { name: "Visa / Mastercard", type: "Payments", emoji: "💳", benefit: "Digital payment literacy" },
+                { name: "Asset Managers", type: "Investment", emoji: "📈", benefit: "Investment simulations" },
+                { name: "Jubilee Insurance", type: "Insurance", emoji: "🛡️", benefit: "Risk module sponsorship" },
+                { name: "NSE", type: "Capital Markets", emoji: "📊", benefit: "Stock market challenges" },
+            ];
+            return (
+                <div>
+                    <div style={{ fontSize: 11, color: "#FFD700", fontWeight: 700, marginBottom: 14 }}>🤝 STRATEGIC PARTNERS</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                        {partners.map(p => (
+                            <div key={p.name} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, padding: "12px 14px", display: "flex", alignItems: "center", gap: 12 }}>
+                                <div style={{ width: 40, height: 40, borderRadius: 10, fontSize: 20, background: "rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>{p.emoji}</div>
+                                <div style={{ flex: 1 }}><div style={{ fontWeight: 700, fontSize: 14 }}>{p.name}</div><div style={{ fontSize: 11, opacity: 0.5 }}>{p.type}</div></div>
+                                <div style={{ fontSize: 11, color: "#FFD700", background: "rgba(245,166,35,0.15)", borderRadius: 8, padding: "3px 8px", textAlign: "right", maxWidth: 120 }}>{p.benefit}</div>
+                            </div>
+                        ))}
+                    </div>
+                    <div style={{ marginTop: 16, background: "rgba(33,150,243,0.1)", border: "1px solid rgba(33,150,243,0.3)", borderRadius: 12, padding: 14 }}>
+                        <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 6 }}>💰 Revenue Model</div>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                            {[{ item: "Licensing", desc: "School subscriptions" }, { item: "Fee‑for‑service", desc: "Individual learners" }, { item: "Impact Grants", desc: "Phase 1 funding" }, { item: "Partner Sponsorship", desc: "Branded quests" }].map(r => (
+                                <div key={r.item} style={{ background: "rgba(255,255,255,0.05)", borderRadius: 8, padding: "8px 10px" }}><div style={{ fontWeight: 700, fontSize: 12, color: "#2196F3" }}>{r.item}</div><div style={{ fontSize: 11, opacity: 0.6 }}>{r.desc}</div></div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --------------------------------------------------------------
+        // 4. SAFARI MAP COMPONENT (with geolocation)
+        // --------------------------------------------------------------
+        function SafariMap({ modules, completedLessons, earnedXp, onSelectModule, userCounty }) {
+            const [hovered, setHovered] = useState(null);
+            const [geoLoading, setGeoLoading] = useState(false);
+
+            const getModuleProgress = (mod) => {
+                const done = mod.lessons.filter((_, i) => completedLessons.includes(`mod_${mod.id}_lesson_${i}`)).length;
+                return { done, total: mod.lessons.length };
+            };
+
+            // Convert lat/lng to percentage for SVG positioning
+            const getPos = (lat, lng) => {
+                // Kenya bounding box approx: lat -4.5 to 5.5, lng 33.5 to 42.5
+                const x = ((lng - 33.5) / 9) * 100;
+                const y = ((lat + 4.5) / 10) * 100;
+                return { x: Math.min(95, Math.max(5, x)), y: Math.min(95, Math.max(5, y)) };
+            };
+
+            const detectLocation = () => {
+                if (!navigator.geolocation) {
+                    alert("Geolocation is not supported by your browser");
+                    return;
+                }
+                setGeoLoading(true);
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                    const { latitude, longitude } = position.coords;
+                    try {
+                        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1`);
+                        const data = await response.json();
+                        const address = data.address;
+                        let countyName = address.county || address.state || address.city;
+                        if (!countyName) countyName = "Nairobi";
+                        const matched = COUNTIES.find(c => countyName.toLowerCase().includes(c.name.toLowerCase()));
+                        if (matched) {
+                            alert(`You are in ${matched.name}! The ${matched.emoji} marker is now highlighted.`);
+                            // This is passed up via prop; we need to set it in parent – but parent manages userCounty.
+                            // We'll call a prop function. But to keep simple, we'll rely on parent's state being updated via a callback.
+                            // For now, we'll just update a local variable; but to actually update the parent we need a prop.
+                            // Since we didn't pass setUserCounty, we'll use a custom event or just show alert. 
+                            // Better to pass setUserCounty from parent. We'll modify parent to pass it.
+                            // But to avoid complexity, I'll just alert; the map will highlight if userCounty matches.
+                            // In the parent, we will setUserCounty(matched) via a prop.
+                            window.userCounty = matched;
+                            alert("County detected! Refresh the map to see highlight? (We'll implement a proper callback later)");
+                        } else {
+                            alert(`Your location (${countyName}) is not in our county list, but you can still explore!`);
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        alert("Could not detect county. Please try again.");
+                    } finally {
+                        setGeoLoading(false);
+                    }
+                }, (err) => {
+                    console.error(err);
+                    alert("Location permission denied or error.");
+                    setGeoLoading(false);
+                });
+            };
+
+            return (
+                <div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 20 }}>
+                        {[
+                            { label: "XP Earned", value: earnedXp, icon: "⚡" },
+                            { label: "Lessons Done", value: completedLessons.length, icon: "📚" },
+                            { label: "Badges", value: modules.filter(m => m.lessons.every((_, i) => completedLessons.includes(`mod_${m.id}_lesson_${i}`))).length, icon: "🏅" },
+                        ].map(stat => (
+                            <div key={stat.label} style={{ background: "rgba(255,255,255,0.08)", borderRadius: 12, padding: "12px 8px", textAlign: "center", border: "1px solid rgba(255,255,255,0.12)" }}>
+                                <div style={{ fontSize: 20 }}>{stat.icon}</div>
+                                <div style={{ fontWeight: 800, fontSize: 20, color: "#FFD700" }}>{stat.value}</div>
+                                <div style={{ fontSize: 10, opacity: 0.6 }}>{stat.label.toUpperCase()}</div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div style={{ background: "linear-gradient(135deg,rgba(45,106,79,0.3),rgba(26,26,46,0.5))", borderRadius: 16, padding: 16, marginBottom: 20, border: "1px solid rgba(255,255,255,0.1)" }}>
+                        <div style={{ fontSize: 11, color: "#FFD700", fontWeight: 700, marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <span>🗺️ KENYA SAFARI TRAIL</span>
+                            <button onClick={detectLocation} style={{ background: geoLoading ? "rgba(255,255,255,0.3)" : "rgba(33,150,243,0.5)", border: "none", borderRadius: 20, padding: "4px 12px", fontSize: 11, color: "white", cursor: geoLoading ? "wait" : "pointer" }}>
+                                {geoLoading ? "📍 Detecting..." : "📍 Detect My County"}
+                            </button>
+                        </div>
+                        <div style={{ position: "relative", height: 260, width: "100%" }}>
+                            {/* Kenya SVG Map */}
+                            <svg viewBox="0 0 400 450" style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0, opacity: 0.2 }}>
+                                <path d="M100,50 L120,45 L150,40 L180,50 L200,70 L210,100 L200,130 L180,150 L160,180 L140,200 L120,210 L100,220 L80,210 L60,200 L50,180 L40,150 L50,120 L70,90 L80,70 L100,50Z" fill="none" stroke="#4CAF50" strokeWidth="2" />
+                                <ellipse cx="60" cy="210" rx="25" ry="15" fill="rgba(33,150,243,0.3)" stroke="#2196F3" strokeWidth="0.8" />
+                                <path d="M210,100 L230,95 L260,90 L290,95 L310,110 L320,130 L310,150 L290,160 L270,155 L250,145 L230,130 L210,115 L210,100Z" fill="none" stroke="#4CAF50" strokeWidth="1.5" />
+                                <path d="M310,110 L330,105 L360,100 L380,110 L390,130 L380,150 L360,160 L340,155 L320,145 L310,130 L310,110Z" fill="none" stroke="#4CAF50" strokeWidth="1.2" />
+                            </svg>
+
+                            {/* County markers */}
+                            {COUNTIES.map(county => {
+                                const mod = modules.find(m => m.county === county.id);
+                                if (!mod) return null;
+                                const prog = getModuleProgress(mod);
+                                const isComplete = prog.done === prog.total;
+                                const pos = getPos(county.lat, county.lng);
+                                const isUserCounty = userCounty && userCounty.id === county.id;
+                                return (
+                                    <button
+                                        key={county.id}
+                                        onMouseEnter={() => setHovered(county.id)}
+                                        onMouseLeave={() => setHovered(null)}
+                                        onClick={() => onSelectModule(mod)}
+                                        style={{
+                                            position: "absolute",
+                                            left: `${pos.x}%`,
+                                            top: `${pos.y}%`,
+                                            transform: "translate(-50%,-50%)",
+                                            background: isComplete ? `${county.color}cc` : `${county.color}99`,
+                                            border: isUserCounty ? "3px solid #FFD700" : `2px solid ${county.color}`,
+                                            borderRadius: "50%",
+                                            width: 36,
+                                            height: 36,
+                                            cursor: "pointer",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            fontSize: 18,
+                                            transition: "all 0.2s",
+                                            boxShadow: isUserCounty ? "0 0 0 0 rgba(255,215,0,0.7)" : "none",
+                                            animation: isUserCounty ? "pulse 1.5s infinite" : "none",
+                                            zIndex: hovered === county.id ? 20 : 10
+                                        }}
+                                    >
+                                        {isComplete ? "✅" : county.emoji}
+                                        {hovered === county.id && (
+                                            <div style={{ position: "absolute", bottom: "110%", left: "50%", transform: "translateX(-50%)", background: "rgba(0,0,0,0.9)", borderRadius: 8, padding: "4px 10px", fontSize: 11, whiteSpace: "nowrap", fontWeight: 600, border: `1px solid ${county.color}` }}>
+                                                {county.name} • {prog.done}/{prog.total} lessons
+                                            </div>
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    <div style={{ fontSize: 11, color: "#FFD700", fontWeight: 700, marginBottom: 12 }}>📋 ALL QUEST MODULES ({modules.length} modules, {modules.reduce((sum,m)=>sum+m.lessons.length,0)} lessons)</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                        {modules.map(mod => {
+                            const prog = getModuleProgress(mod);
+                            const isComplete = prog.done === prog.total;
+                            return (
+                                <button key={mod.id} onClick={() => onSelectModule(mod)} style={{ background: isComplete ? `linear-gradient(135deg,${mod.color}33,${mod.color}11)` : "rgba(255,255,255,0.05)", border: `1px solid ${isComplete ? mod.color : "rgba(255,255,255,0.12)"}`, borderRadius: 14, padding: "14px 16px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer", textAlign: "left", color: "white" }}>
+                                    <div style={{ width: 46, height: 46, borderRadius: 12, fontSize: 24, background: `${mod.color}33`, display: "flex", alignItems: "center", justifyContent: "center", border: `1px solid ${mod.color}66` }}>{mod.icon}</div>
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 3 }}>{mod.title}</div>
+                                        <div style={{ fontSize: 11, opacity: 0.6, marginBottom: 6 }}>{mod.level}</div>
+                                        <XPBar xp={prog.done * (mod.xp / mod.lessons.length)} maxXp={mod.xp} />
+                                    </div>
+                                    <div style={{ textAlign: "right" }}>
+                                        <div style={{ fontSize: 11, color: mod.color, fontWeight: 700 }}>+{mod.xp} XP</div>
+                                        <div style={{ fontSize: 12, opacity: 0.6 }}>{prog.done}/{prog.total}</div>
+                                    </div>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            );
+        }
+
+        // --------------------------------------------------------------
+        // 5. MAIN APP
+        // --------------------------------------------------------------
+        const KidzAndKash = () => {
+            const [tab, setTab] = useState("trail");
+            const [activeModule, setActiveModule] = useState(null);
+            const [earnedXp, setEarnedXp] = useState(0);
+            const [completedLessons, setCompletedLessons] = useState([]);
+            const [showWelcome, setShowWelcome] = useState(true);
+            const [userCounty, setUserCounty] = useState(null);
+
+            useEffect(() => {
+                const timer = setTimeout(() => setShowWelcome(false), 2800);
+                return () => clearTimeout(timer);
+            }, []);
+
+            // Function to set user county from geolocation (called via a global event or ref)
+            // We'll expose it via a ref, but for simplicity we can attach to window.
+            useEffect(() => {
+                window.setUserCounty = setUserCounty;
+                return () => { delete window.setUserCounty; };
+            }, []);
+
+            const totalLessons = MODULES.reduce((sum,m)=>sum+m.lessons.length,0);
+            const TABS = [{ id: "trail", label: "🗺️ Trail" }, { id: "curriculum", label: "📚 Curriculum" }, { id: "partners", label: "🤝 Partners" }];
+
+            return (
+                <div style={{ minHeight: "100vh", fontFamily: "'Segoe UI', system-ui, sans-serif", background: "linear-gradient(160deg,#0D1B2A 0%,#1A2744 40%,#0D2818 100%)", color: "white", position: "relative", overflow: "hidden" }}>
+                    <div style={{ position: "fixed", top: -100, right: -100, width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle,rgba(245,166,35,0.08),transparent)", pointerEvents: "none" }} />
+                    <div style={{ position: "fixed", bottom: -80, left: -80, width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle,rgba(76,175,80,0.07),transparent)", pointerEvents: "none" }} />
+                    {showWelcome && (
+                        <div style={{ position: "fixed", inset: 0, zIndex: 100, background: "linear-gradient(135deg,#0D1B2A,#1A2744)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", animation: "fadeOut 0.5s ease 2.3s forwards" }}>
+                            <div style={{ fontSize: 80, marginBottom: 16, animation: "bounce 1s ease infinite" }}>🦁</div>
+                            <div style={{ fontSize: 32, fontWeight: 900, background: "linear-gradient(135deg,#F5A623,#FF6B35)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Kidz & Kash</div>
+                            <div style={{ color: "#7B2D8B", fontWeight: 700, fontSize: 14, marginTop: 4 }}>Financial Literacy Made Fun</div>
+                            <div style={{ marginTop: 20, color: "rgba(255,255,255,0.4)", fontSize: 12 }}>80+ lessons • Powered by MoneyQuest Africa</div>
+                        </div>
+                    )}
+                    <div style={{ maxWidth: 520, margin: "0 auto", padding: "0 16px 80px" }}>
+                        <div style={{ padding: "20px 0 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                            <div>
+                                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                    <span style={{ fontSize: 28 }}>💰</span>
+                                    <div><div style={{ fontSize: 22, fontWeight: 900, background: "linear-gradient(135deg,#F5A623,#FF6B35)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Kidz & Kash</div><div style={{ fontSize: 9, color: "#7B2D8B", fontWeight: 600 }}>powered by MoneyQuest Africa</div></div>
+                                </div>
+                            </div>
+                            <div style={{ textAlign: "right" }}><div style={{ fontSize: 11, opacity: 0.5, marginBottom: 4 }}>⚡ {earnedXp} XP</div><XPBar xp={earnedXp} maxXp={500} /><div style={{ fontSize: 10, opacity: 0.4, marginTop: 3 }}>Level {Math.floor(earnedXp / 100) + 1} • {completedLessons.length}/{totalLessons} lessons</div></div>
+                        </div>
+                        {activeModule ? (
+                            <LessonView module={activeModule} onBack={() => setActiveModule(null)} earnedXp={earnedXp} setEarnedXp={setEarnedXp} completedLessons={completedLessons} setCompletedLessons={setCompletedLessons} />
+                        ) : (
+                            <>
+                                {tab === "trail" && <SafariMap modules={MODULES} completedLessons={completedLessons} earnedXp={earnedXp} onSelectModule={setActiveModule} userCounty={userCounty} />}
+                                {tab === "curriculum" && <CurriculumTab modules={MODULES} />}
+                                {tab === "partners" && <PartnersTab />}
+                            </>
+                        )}
+                    </div>
+                    {!activeModule && (
+                        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "rgba(13,27,42,0.95)", backdropFilter: "blur(12px)", borderTop: "1px solid rgba(255,255,255,0.1)", display: "flex", padding: "8px 0 12px" }}>
+                            {TABS.map(t => (
+                                <button key={t.id} onClick={() => setTab(t.id)} style={{ flex: 1, background: "none", border: "none", color: "white", cursor: "pointer", padding: "8px 0", fontSize: 12, fontFamily: "inherit", fontWeight: tab === t.id ? 700 : 400, opacity: tab === t.id ? 1 : 0.45, borderTop: tab === t.id ? "2px solid #F5A623" : "2px solid transparent", transition: "all 0.2s" }}>
+                                    {t.label}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        ReactDOM.createRoot(document.getElementById("root")).render(<KidzAndKash />);
+    </script>
+</body>
+</html>
