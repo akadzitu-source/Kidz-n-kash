@@ -1,0 +1,13 @@
+<img 
+  src="kenya-map.png" 
+  alt="Map of Kenya" 
+  style={{ 
+    width: "100%", 
+    height: "100%", 
+    objectFit: "contain", 
+    position: "absolute", 
+    top: 0, 
+    left: 0, 
+    opacity: 0.6 
+  }} 
+/>
