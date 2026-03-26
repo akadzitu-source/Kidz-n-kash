@@ -1,0 +1,14 @@
+kidz-and-kash-enterprise/
+├── public/               # Static assets
+├── src/
+│   ├── components/       # React components (Auth, Dashboard, Lessons, Map)
+│   ├── context/          # Auth, Offline, Tenant contexts
+│   ├── hooks/            # Custom hooks (useAuth, useOffline, useFirestore)
+│   ├── services/         # Firebase, sync, lesson data
+│   ├── App.jsx
+│   └── main.jsx
+├── capacitor.config.json
+├── firebase.json
+├── package.json
+├── vite.config.js
+└── README.md

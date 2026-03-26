@@ -1,0 +1,12 @@
+
+---
+
+## 🎯 How to Use This for Funding
+
+1. **Deploy the web app** to Firebase Hosting – share the live link in your pitch deck.
+2. **Record a demo video** showing offline mode, geolocation, and the mobile app (use an emulator).
+3. **Create a simple admin panel** (already in the code) to demonstrate multi‑tenancy.
+4. **Prepare a one‑pager** with the revenue streams and market opportunity (15M+ Kenyan youth).
+5. **Approach corporate partners** like Safaricom, Jubilee Insurance, and KCB with the white‑label option.
+
+The prototype is now a **fully interactive, offline‑first, enterprise‑grade platform** – exactly what investors want to see.

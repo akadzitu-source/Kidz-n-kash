@@ -1,0 +1,9 @@
+{
+  "appId": "com.kidzandkash.app",
+  "appName": "Kidz & Kash",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  }
+}

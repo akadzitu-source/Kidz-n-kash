@@ -1,0 +1,22 @@
+kidz-and-kash-enterprise/
+├── public/                 # static assets
+├── src/
+│   ├── components/
+│   │   ├── Auth/           # Login, Register, ParentConsent
+│   │   ├── Dashboard/      # User progress, badges
+│   │   ├── Lessons/        # Lesson viewer, quizzes
+│   │   ├── Map/            # Kenya map with geolocation
+│   │   └── Admin/          # Tenant management (super admin)
+│   ├── hooks/              # useAuth, useFirestore, useOffline
+│   ├── services/
+│   │   ├── firebase.js     # Firebase config
+│   │   ├── sync.js         # Offline sync logic
+│   │   └── lessons.js      # Lesson data (static + dynamic)
+│   ├── App.jsx
+│   ├── main.jsx
+│   └── index.css
+├── capacitor.config.json    # Capacitor config for mobile
+├── firebase.json            # Firebase hosting & functions config
+├── package.json
+├── vite.config.js
+└── README.md
